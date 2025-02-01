@@ -1,0 +1,17 @@
+{
+  "name": "tsop",
+  "version": "1.0.0",
+  "description": "Module IR NEC receiver TSOP4838. Based on https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/rmt.html",
+  "keywords": "tsop",
+  "authors":
+  [
+    {
+      "name": "Olmoro",
+      "email": "molvas66@mail.ru",
+      "url": " "
+    }
+  ],
+  "license": "MIT",
+  "frameworks": ["espidf"],
+  "platforms": ["espressif32"]
+}
