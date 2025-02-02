@@ -70,8 +70,8 @@ void alarmInitDevices()
   // Запускаем приемник ИК
   #if defined (CONFIG_GPIO_TSOP) && (CONFIG_GPIO_TSOP > -1)
     /*  */
-    tsopInit(CONFIG_GPIO_TSOP, alarmTaskQueue());
-    tsopEnable();
+    tsopStart(CONFIG_GPIO_TSOP, alarmTaskQueue());
+    //tsopEnable();
   #endif // CONFIG_GPIO_TSOP
 }
 
@@ -206,13 +206,13 @@ void alarmInitSensors()
 
 
 
-  //   // Контроль ИК
-  // // ИК пульт управления                old:   433 MHz пульты управления
-  // alarmZoneHandle_t azRemoteControls = alarmZoneAdd("Пульт управления", "controls", nullptr);
-  // alarmResponsesSet(azRemoteControls, ASM_DISABLED, ASRS_CONTROL, ASRS_CONTROL);
-  // alarmResponsesSet(azRemoteControls, ASM_ARMED, ASRS_CONTROL, ASRS_CONTROL);
-  // alarmResponsesSet(azRemoteControls, ASM_PERIMETER, ASRS_CONTROL, ASRS_CONTROL);
-  // alarmResponsesSet(azRemoteControls, ASM_OUTBUILDINGS, ASRS_CONTROL, ASRS_CONTROL);
+    // Контроль ИК
+  // ИК пульт управления                old:   433 MHz пульты управления
+  alarmZoneHandle_t azRemoteControls = alarmZoneAdd("Пульт управления", "controls", nullptr);
+  alarmResponsesSet(azRemoteControls, ASM_DISABLED, ASRS_CONTROL, ASRS_CONTROL);
+  alarmResponsesSet(azRemoteControls, ASM_ARMED, ASRS_CONTROL, ASRS_CONTROL);
+  alarmResponsesSet(azRemoteControls, ASM_PERIMETER, ASRS_CONTROL, ASRS_CONTROL);
+  alarmResponsesSet(azRemoteControls, ASM_OUTBUILDINGS, ASRS_CONTROL, ASRS_CONTROL);
 
   rlog_i(logTAG, "Initialization of AFS sensors");
 
@@ -333,31 +333,31 @@ void alarmInitSensors()
   // -----------------------------------------------------------------------------------
   // пульт управления ИК, 21 кнопка
   // -----------------------------------------------------------------------------------
-  // alarmSensorHandle_t asRC_IR = alarmSensorAdd(     
-  //   AST_RXIR_16A_16C,         // Тип датчика: беспроводной    //AST_RX433_20A4C,
-  //   "Пульт",                  // Название пульта
-  //   "rc",                     // Топик пульта
-  //   false,                    // Локальные топики не используются
-  //   0x0000FF00                // Адрес пульта                 //0x0004F9CB
-  // );
-  // if (asRC_IR) {
-  //   alarmEventSet(asRC_IR, azRemoteControls, 0,     // Зона "пультов"
-  //     ASE_CTRL_OFF,           // Команда отключения режима охраны
-  //     (uint32_t)0xEA15, NULL, // Код команды VOL-, без сообщений  // Код команды 0x01, без сообщений
-  //     ALARM_VALUE_NONE, NULL, // Кода отмены нет, без сообщений
-  //     2,                      // Должно придти как минимум 2 кодовых посылки для переключения
-  //     3*1000,                 // Время автосброса: 3 секунды
-  //     0,                      // Без повторной публикации состояния
-  //     false);                 // Не требуется подтвеждение с других датчиков
-  //   alarmEventSet(asRC_IR, azRemoteControls, 1,     // Зона "пультов"
-  //     ASE_CTRL_ON,            // Команда включения режима охраны
-  //     (uint32_t)0xF609, NULL, // Код команды VOL+, без сообщений    // Код команды 0x08, без сообщений
-  //     ALARM_VALUE_NONE, NULL, // Кода отмены нет, без сообщений
-  //     2,                      // Должно придти как минимум 2 кодовых посылки для переключения
-  //     3*1000,                 // Время автосброса: 3 секунды
-  //     0,                      // Без повторной публикации состояния
-  //     false);                 // Не требуется подтвеждение с других датчиков
-  // };
+  alarmSensorHandle_t asRC_IR = alarmSensorAdd(     
+    AST_RXIR_16A_16C,         // Тип датчика: беспроводной    //AST_RX433_20A4C,
+    "Пульт",                  // Название пульта
+    "rc",                     // Топик пульта
+    false,                    // Локальные топики не используются
+    0x0000FF00                // Адрес пульта                 //0x0004F9CB
+  );
+  if (asRC_IR) {
+    alarmEventSet(asRC_IR, azRemoteControls, 0,     // Зона "пультов"
+      ASE_CTRL_OFF,           // Команда отключения режима охраны
+      (uint32_t)0xEA15, NULL, // Код команды VOL-, без сообщений  // Код команды 0x01, без сообщений
+      ALARM_VALUE_NONE, NULL, // Кода отмены нет, без сообщений
+      2,                      // Должно придти как минимум 2 кодовых посылки для переключения
+      3*1000,                 // Время автосброса: 3 секунды
+      0,                      // Без повторной публикации состояния
+      false);                 // Не требуется подтвеждение с других датчиков
+    alarmEventSet(asRC_IR, azRemoteControls, 1,     // Зона "пультов"
+      ASE_CTRL_ON,            // Команда включения режима охраны
+      (uint32_t)0xF609, NULL, // Код команды VOL+, без сообщений    // Код команды 0x08, без сообщений
+      ALARM_VALUE_NONE, NULL, // Кода отмены нет, без сообщений
+      2,                      // Должно придти как минимум 2 кодовых посылки для переключения
+      3*1000,                 // Время автосброса: 3 секунды
+      0,                      // Без повторной публикации состояния
+      false);                 // Не требуется подтвеждение с других датчиков
+  };
 
 
   rlog_i(logTAG, "Initialization of AFS completed");

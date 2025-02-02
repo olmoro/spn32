@@ -15,8 +15,8 @@
 extern "C" {
 #endif
 
-void tsopInit(const uint8_t gpioRx, QueueHandle_t queueProc);
-void tsopEnable();
+void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc);
+//void tsopEnable();
 
 // void tsopDisable();
 // bool tsopIsAvailable();

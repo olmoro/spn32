@@ -40,7 +40,7 @@ static const char *TAG_RECEIVER = "TSOP";
 static gpio_num_t _gpioRx = GPIO_NUM_MAX;
 
 
-extern "C" { 
+//extern "C" { 
 /**
  * @brief Saving NEC decode results
  */
@@ -166,7 +166,7 @@ static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done
     return high_task_wakeup == pdTRUE;
 }
 
-} // extern "C"
+//} // extern "C"
 
 
 // ------------------------------------------------------------------------
@@ -244,18 +244,19 @@ static void IRAM_ATTR tsopHandler(void* arg)
 
 
 
-void tsopInit(const uint8_t gpioRx, QueueHandle_t queueProc)
+void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
 {
   /* cpp - преобразование указателя (базовый класс) в указатель на производный класс */
-  _gpioRx = static_cast<gpio_num_t>(gpioRx);
+  //_gpioRx = static_cast<gpio_num_t>(gpioRx);
+  _gpioRx = gpioRx;
 
   rlog_i(TAG_RECEIVER, "Initialization of IR receiver on gpio #%d", _gpioRx);
-  gpio_reset_pin(_gpioRx);
+  // gpio_reset_pin(_gpioRx);
 
-  ERR_CHECK(gpio_set_direction(_gpioRx, GPIO_MODE_INPUT), ERR_GPIO_SET_MODE);
-  ERR_CHECK(gpio_set_pull_mode(_gpioRx, GPIO_FLOATING), ERR_GPIO_SET_MODE);
-  ERR_CHECK(gpio_set_intr_type(_gpioRx, GPIO_INTR_ANYEDGE), ERR_GPIO_SET_ISR);
-  ERR_CHECK(gpio_isr_handler_add(_gpioRx, tsopHandler, queueProc), ERR_GPIO_SET_ISR);
+  // ERR_CHECK(gpio_set_direction(_gpioRx, GPIO_MODE_INPUT), ERR_GPIO_SET_MODE);
+  // ERR_CHECK(gpio_set_pull_mode(_gpioRx, GPIO_FLOATING), ERR_GPIO_SET_MODE);
+  // ERR_CHECK(gpio_set_intr_type(_gpioRx, GPIO_INTR_ANYEDGE), ERR_GPIO_SET_ISR);
+  // ERR_CHECK(gpio_isr_handler_add(_gpioRx, tsopHandler, queueProc), ERR_GPIO_SET_ISR);
 
   #ifdef CONFIG_TSOP_STATIC_ALLOCATION
   static StackType_t tsopTaskStack[CONFIG_TSOP_TASK_STACK_SIZE];
@@ -278,13 +279,13 @@ void tsopInit(const uint8_t gpioRx, QueueHandle_t queueProc)
   #endif
 }
 
-void tsopEnable()
-{
-  esp_err_t err = gpio_intr_enable(_gpioRx);
-  if (err == ESP_OK) {
-    rlog_i(TAG_RECEIVER, "Receiver IR started");
-  } else {
-    rlog_e(TAG_RECEIVER, "Failed to start IR receiver");
-  };
+// void tsopEnable()
+// {
+//   // esp_err_t err = gpio_intr_enable(_gpioRx);
+//   // if (err == ESP_OK) {
+//   //   rlog_i(TAG_RECEIVER, "Receiver IR started");
+//   // } else {
+//   //   rlog_e(TAG_RECEIVER, "Failed to start IR receiver");
+//   // };
 
-}
+// }
