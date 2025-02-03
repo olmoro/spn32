@@ -7,7 +7,6 @@
 #define _TSOP_H_
 
 #include <stdbool.h>
-//#include "reLed.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
@@ -16,15 +15,6 @@ extern "C" {
 #endif
 
 void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc);
-//void tsopEnable();
-
-// void tsopDisable();
-// bool tsopIsAvailable();
-// void tsopResetAvailable();
-uint32_t tsopGetReceivedValue();
-uint16_t tsopGetReceivedBitLength();
-uint16_t tsopGetReceivedDelay();
-uint16_t tsopGetReceivedProtocol();
 
 #ifdef __cplusplus
 }

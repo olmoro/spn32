@@ -9,27 +9,19 @@
 
 #include "tsop.h"
 #include "project_config.h"
-//#include "common_config.h"
+  //#include "meAlarm.h"
 #include "def_tasks.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "esp_log.h"
-//#include "driver/rmt_tx.h"
 #include "driver/rmt_rx.h"
 #include "mTypes.h"
-
-// #include <stdint.h>
-// #include <stdio.h>
-// #include "time.h"
-// #include "esp_err.h"
-// #include "esp_timer.h"
 #include <driver/gpio.h>
 #include "rLog.h"
-//#include "rTypes.h"
 
 // Queue
-extern QueueHandle_t alarmTaskQueue;
+//extern QueueHandle_t alarmTaskQueue;
 
 
 static const char *TAG_RECEIVER = "TSOP";
@@ -39,8 +31,6 @@ static const char *TAG_RECEIVER = "TSOP";
 
 static gpio_num_t _gpioRx = GPIO_NUM_MAX;
 
-
-//extern "C" { 
 /**
  * @brief Saving NEC decode results
  */
@@ -166,14 +156,16 @@ static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done
     return high_task_wakeup == pdTRUE;
 }
 
-//} // extern "C"
-
 
 // ------------------------------------------------------------------------
 //                          Задача
 // ------------------------------------------------------------------------
-static void IRAM_ATTR tsopHandler(void* arg)
+// static void IRAM_ATTR tsopHandler(void* arg)
+static void tsopHandler( void *pvParameters )
 {
+  portBASE_TYPE xStatus;
+  const TickType_t xTicksToWait = 300 / portTICK_PERIOD_MS;
+
   ESP_LOGI(TAG_RECEIVER, "create RMT RX channel");
   rmt_rx_channel_config_t rx_channel_cfg = 
   {
@@ -219,8 +211,8 @@ static void IRAM_ATTR tsopHandler(void* arg)
       //rlog_i(TAG_RECEIVER, "Address=%04X, Command=%04X\r\n", s_nec_code_address, s_nec_code_command);
 
       /* Завершено успешно, отправка данных во внешнюю очередь */
-      //   QueueHandle_t queueProc = alarmTaskQueue   ;  //QueueHandle_t)arg;
-      if (alarmTaskQueue)   // (queueProc)
+ // QueueHandle_t queueProc = arg;
+      if ( 1 )
       {
         input_data_t data;
         data.source = IDS_TSOP;                       /* Идентификатор источника */
@@ -246,18 +238,10 @@ static void IRAM_ATTR tsopHandler(void* arg)
 
 void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
 {
-  /* cpp - преобразование указателя (базовый класс) в указатель на производный класс */
-  //_gpioRx = static_cast<gpio_num_t>(gpioRx);
   _gpioRx = gpioRx;
 
   rlog_i(TAG_RECEIVER, "Initialization of IR receiver on gpio #%d", _gpioRx);
-  // gpio_reset_pin(_gpioRx);
-
-  // ERR_CHECK(gpio_set_direction(_gpioRx, GPIO_MODE_INPUT), ERR_GPIO_SET_MODE);
-  // ERR_CHECK(gpio_set_pull_mode(_gpioRx, GPIO_FLOATING), ERR_GPIO_SET_MODE);
-  // ERR_CHECK(gpio_set_intr_type(_gpioRx, GPIO_INTR_ANYEDGE), ERR_GPIO_SET_ISR);
-  // ERR_CHECK(gpio_isr_handler_add(_gpioRx, tsopHandler, queueProc), ERR_GPIO_SET_ISR);
-
+ 
   #ifdef CONFIG_TSOP_STATIC_ALLOCATION
   static StackType_t tsopTaskStack[CONFIG_TSOP_TASK_STACK_SIZE];
   static StaticTask_t tsopTaskBuffer;
@@ -265,7 +249,7 @@ void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
        xTaskCreateStatic(tsopHandler,
                          "tsop_task",
          CONFIG_TSOP_TASK_STACK_SIZE,
-                                NULL,           // queueProc
+                                NULL,           // *const pvParameters
            CONFIG_TASK_PRIORITY_TSOP,
                        tsopTaskStack,
                      &tsopTaskBuffer);
@@ -278,14 +262,3 @@ void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
                                 NULL);
   #endif
 }
-
-// void tsopEnable()
-// {
-//   // esp_err_t err = gpio_intr_enable(_gpioRx);
-//   // if (err == ESP_OK) {
-//   //   rlog_i(TAG_RECEIVER, "Receiver IR started");
-//   // } else {
-//   //   rlog_e(TAG_RECEIVER, "Failed to start IR receiver");
-//   // };
-
-// }

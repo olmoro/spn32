@@ -71,7 +71,6 @@ void alarmInitDevices()
   #if defined (CONFIG_GPIO_TSOP) && (CONFIG_GPIO_TSOP > -1)
     /*  */
     tsopStart(CONFIG_GPIO_TSOP, alarmTaskQueue());
-    //tsopEnable();
   #endif // CONFIG_GPIO_TSOP
 }
 
