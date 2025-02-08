@@ -20,9 +20,8 @@
 #include <driver/gpio.h>
 #include "rLog.h"
 
-// Queue
-//extern QueueHandle_t alarmTaskQueue;
-
+QueueHandle_t _queueProc;
+input_data_t _data;
 
 static const char *TAG_RECEIVER = "TSOP";
 #define ERR_CHECK(err, str) if (err != ESP_OK) ESP_LOGE(TAG_RECEIVER, "%s: #%d %s", str, err, esp_err_to_name(err));
@@ -211,19 +210,42 @@ static void tsopHandler( void *pvParameters )
       //rlog_i(TAG_RECEIVER, "Address=%04X, Command=%04X\r\n", s_nec_code_address, s_nec_code_command);
 
       /* Завершено успешно, отправка данных во внешнюю очередь */
- // QueueHandle_t queueProc = arg;
-      if ( 1 )
+            rlog_i(TAG_RECEIVER, " _queueProc=%" PRIX32 "\n", _queueProc);
+      if ( _queueProc )
       {
-        input_data_t data;
-        data.source = IDS_TSOP;                       /* Идентификатор источника */
-        data.rxIR.value = (s_nec_code_address << 16) | s_nec_code_command;  /* uint32_t value */
+        _data.source = IDS_TSOP;                       /* Идентификатор источника */
+        _data.rxIR.value = (s_nec_code_address << 16) | s_nec_code_command;  /* uint32_t value */
         
-        rlog_i(TAG_RECEIVER, " value=%" PRIX32 "\n", data.rxIR.value);
+        rlog_i(TAG_RECEIVER, " value=%" PRIX32 "\n", _data.rxIR.value);
 
           //      // Очистка буфера ??
 
-              /* Публиковать данные */
-          //xQueueSend(queueProc, &data, portMAX_DELAY);
+            /* Отправка в очередь.
+            Второй параметр - адрес отправляемой структуры. Адрес передается
+            как параметр задачи, для чего напрямую используется pvParameters.
+            Третий параметр время блокировки - время, которое задача должна быть
+            в состоянии Blocked, ожидая появления доступного места на очереди,
+            если очередь уже полна. Время блокировки указано потому, что
+            отправляющие задачи имеют более высокий приоритет, чем принимающая
+            задача, так что ожидается, что очередь сразу заполнится. Принимающая
+            задача будет запускаться и удалять элементы данных из очереди, когда
+            обе отправляющие задачи находятся в состоянии Blocked. */
+        xStatus = xQueueSend( _queueProc, pvParameters, xTicksToWait );
+
+        if( xStatus != pdPASS )
+        {
+            /* Операция отправки не завершена, даже после истечения 100 мс.
+                Это должно означать ошибку, так как принимающая задача должна
+                освобождать место в очереди, как только обе отправляющие задачи
+                войдут в состояние Blocked. */
+           rlog_e(TAG_RECEIVER, "Could not send to the queue.\r\n" );
+        }
+
+        /* Разрешаем выполниться другой такой же задаче, отправляющей данные
+            в очередь. */
+        taskYIELD();
+
+        //  xQueueSend(_queueProc, pvParameters, portMAX_DELAY);
         //if (xQueueSend( alarmTaskQueue, &data, ( TickType_t ) 0 ) == pdTRUE) {      }
 
       /* start receive again */
@@ -239,9 +261,11 @@ static void tsopHandler( void *pvParameters )
 void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
 {
   _gpioRx = gpioRx;
+  _queueProc = queueProc;
 
-  rlog_i(TAG_RECEIVER, "Initialization of IR receiver on gpio #%d", _gpioRx);
- 
+  //rlog_i(TAG_RECEIVER, "Initialization of IR receiver on gpio #%d", _gpioRx);
+  rlog_i(TAG_RECEIVER, " queueProc=%" PRIX32 "\n", queueProc);
+
   #ifdef CONFIG_TSOP_STATIC_ALLOCATION
   static StackType_t tsopTaskStack[CONFIG_TSOP_TASK_STACK_SIZE];
   static StaticTask_t tsopTaskBuffer;
@@ -249,7 +273,7 @@ void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
        xTaskCreateStatic(tsopHandler,
                          "tsop_task",
          CONFIG_TSOP_TASK_STACK_SIZE,
-                                NULL,           // *const pvParameters
+                              &_data,    // адрес структуры
            CONFIG_TASK_PRIORITY_TSOP,
                        tsopTaskStack,
                      &tsopTaskBuffer);

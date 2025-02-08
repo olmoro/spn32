@@ -70,6 +70,12 @@ void alarmInitDevices()
   // Запускаем приемник ИК
   #if defined (CONFIG_GPIO_TSOP) && (CONFIG_GPIO_TSOP > -1)
     /*  */
+
+    //QueueHandle_t aaa = alarmTaskQueue();
+    uint32_t aaa = (uint32_t)alarmTaskQueue();
+  rlog_i(logTAG, " queueProc=%" PRIX32 "\n", aaa);
+
+
     tsopStart(CONFIG_GPIO_TSOP, alarmTaskQueue());
   #endif // CONFIG_GPIO_TSOP
 }
@@ -81,127 +87,127 @@ void alarmInitSensors()
   // Настраиваем зоны охраны
   // ------------------------------------------------------------------------
 
-  // // Двери (периметр) :: создаем зону охраны
-  // alarmZoneHandle_t azDoors = alarmZoneAdd(
-  //   "Двери",           // Понятное название зоны
-  //   "doors",           // MQTT-топик зоны
-  //   nullptr            // Функция управления реле, при необходимости
-  // );
-  // // Настраиваем реакции для данной зоны в разных режимах
-  // alarmResponsesSet(
-  //   azDoors,           // Ссылка на зону охраны
-  //   ASM_DISABLED,      // Настраиваем реакции для режима ASM_DISABLED - "охрана отключена"
-  //   ASRS_REGISTER,     // Реакция на события тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
-  //   ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
-  // );
-  // alarmResponsesSet(
-  //   azDoors,           // Ссылка на зону охраны
-  //   ASM_ARMED,         // Настраиваем реакции для режима ASM_ARMED - "полная охрана"
-  //   ASRS_ALARM_SIREN,  // Реакция на события тревоги: включить сирену и отправить уведомления
-  //   ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
-  // );
-  // alarmResponsesSet(
-  //   azDoors,           // Ссылка на зону охраны
-  //   ASM_PERIMETER,     // Настраиваем реакции для режима ASM_PERIMETER - "только периметр (дома)" 
-  //   ASRS_ALARM_SIREN,  // Реакция на события тревоги: включить сирену и отправить уведомления
-  //   ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
-  // );
-  // alarmResponsesSet(
-  //   azDoors,           // Ссылка на зону охраны
-  //   ASM_OUTBUILDINGS,  // Настраиваем реакции для режима ASM_OUTBUILDINGS - "внешние помещения" 
-  //   ASRS_ALARM_NOTIFY, // Реакция на события тревоги: тихая тревога - отправить уведомления, но сирену не включать
-  //   ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
-  // );
+  // Двери (периметр) :: создаем зону охраны
+  alarmZoneHandle_t azDoors = alarmZoneAdd(
+    "Двери",           // Понятное название зоны
+    "doors",           // MQTT-топик зоны
+    nullptr            // Функция управления реле, при необходимости
+  );
+  // Настраиваем реакции для данной зоны в разных режимах
+  alarmResponsesSet(
+    azDoors,           // Ссылка на зону охраны
+    ASM_DISABLED,      // Настраиваем реакции для режима ASM_DISABLED - "охрана отключена"
+    ASRS_REGISTER,     // Реакция на события тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
+    ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
+  );
+  alarmResponsesSet(
+    azDoors,           // Ссылка на зону охраны
+    ASM_ARMED,         // Настраиваем реакции для режима ASM_ARMED - "полная охрана"
+    ASRS_ALARM_SIREN,  // Реакция на события тревоги: включить сирену и отправить уведомления
+    ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
+  );
+  alarmResponsesSet(
+    azDoors,           // Ссылка на зону охраны
+    ASM_PERIMETER,     // Настраиваем реакции для режима ASM_PERIMETER - "только периметр (дома)" 
+    ASRS_ALARM_SIREN,  // Реакция на события тревоги: включить сирену и отправить уведомления
+    ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
+  );
+  alarmResponsesSet(
+    azDoors,           // Ссылка на зону охраны
+    ASM_OUTBUILDINGS,  // Настраиваем реакции для режима ASM_OUTBUILDINGS - "внешние помещения" 
+    ASRS_ALARM_NOTIFY, // Реакция на события тревоги: тихая тревога - отправить уведомления, но сирену не включать
+    ASRS_REGISTER      // Реакция на отмену тревоги: только регистрация (фактически это приводит к публикации его на MQTT)
+  );
 
-  // // Датчики дыма и пламени - тревога 24*7
-  // alarmZoneHandle_t azFire = alarmZoneAdd(
-  //   "Пожар", 
-  //   "fire", 
-  //   nullptr);
-  // alarmResponsesSet(
-  //   azFire, 
-  //   ASM_DISABLED, 
-  //   ASRS_ALARM_SILENT, 
-  //   ASRS_ALARM_NOTIFY);
-  // alarmResponsesSet(
-  //   azFire, 
-  //   ASM_ARMED, 
-  //   ASRS_ALARM_SIREN, 
-  //   ASRS_ALARM_NOTIFY);
-  // alarmResponsesSet(
-  //   azFire, 
-  //   ASM_PERIMETER, 
-  //   ASRS_ALARM_SIREN, 
-  //   ASRS_ALARM_NOTIFY);
-  // alarmResponsesSet(
-  //   azFire, 
-  //   ASM_OUTBUILDINGS, 
-  //   ASRS_ALARM_SIREN, 
-  //   ASRS_ALARM_NOTIFY);
+  // Датчики дыма и пламени - тревога 24*7
+  alarmZoneHandle_t azFire = alarmZoneAdd(
+    "Пожар", 
+    "fire", 
+    nullptr);
+  alarmResponsesSet(
+    azFire, 
+    ASM_DISABLED, 
+    ASRS_ALARM_SILENT, 
+    ASRS_ALARM_NOTIFY);
+  alarmResponsesSet(
+    azFire, 
+    ASM_ARMED, 
+    ASRS_ALARM_SIREN, 
+    ASRS_ALARM_NOTIFY);
+  alarmResponsesSet(
+    azFire, 
+    ASM_PERIMETER, 
+    ASRS_ALARM_SIREN, 
+    ASRS_ALARM_NOTIFY);
+  alarmResponsesSet(
+    azFire, 
+    ASM_OUTBUILDINGS, 
+    ASRS_ALARM_SIREN, 
+    ASRS_ALARM_NOTIFY);
 
 
-  // // Контроль сетевого напряжения на X6
-  // #if defined(CONFIG_GPIO_ALARM_ZONE_3) && (CONFIG_GPIO_ALARM_ZONE_3 > -1)
-  //   alarmZoneHandle_t azPower1 = alarmZoneAdd(
-  //     "Контроль питания", 
-  //     "power1", 
-  //     nullptr);
-  //   alarmResponsesSet(
-  //     azPower1, 
-  //     ASM_DISABLED, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  //   alarmResponsesSet(
-  //     azPower1, 
-  //     ASM_ARMED, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  //   alarmResponsesSet(
-  //     azPower1, 
-  //     ASM_PERIMETER, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  //   alarmResponsesSet(
-  //     azPower1, 
-  //     ASM_OUTBUILDINGS, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  // #endif  // CONFIG_GPIO_ALARM_ZONE_3
+  // Контроль сетевого напряжения на X6
+  #if defined(CONFIG_GPIO_ALARM_ZONE_3) && (CONFIG_GPIO_ALARM_ZONE_3 > -1)
+    alarmZoneHandle_t azPower1 = alarmZoneAdd(
+      "Контроль питания", 
+      "power1", 
+      nullptr);
+    alarmResponsesSet(
+      azPower1, 
+      ASM_DISABLED, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+    alarmResponsesSet(
+      azPower1, 
+      ASM_ARMED, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+    alarmResponsesSet(
+      azPower1, 
+      ASM_PERIMETER, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+    alarmResponsesSet(
+      azPower1, 
+      ASM_OUTBUILDINGS, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+  #endif  // CONFIG_GPIO_ALARM_ZONE_3
 
-  // // Контроль сетевого напряжения на X7
-  // #if defined(CONFIG_GPIO_ALARM_ZONE_4) && (CONFIG_GPIO_ALARM_ZONE_4 > -1)
-  //   alarmZoneHandle_t azPower2 = alarmZoneAdd(
-  //     "Контроль питания", 
-  //     "power2", 
-  //     nullptr);
-  //   alarmResponsesSet(
-  //     azPower2, 
-  //     ASM_DISABLED, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  //   alarmResponsesSet(
-  //     azPower2, 
-  //     ASM_ARMED, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  //   alarmResponsesSet(
-  //     azPower2, 
-  //     ASM_PERIMETER, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  //   alarmResponsesSet(
-  //     azPower2, 
-  //     ASM_OUTBUILDINGS, 
-  //     ASRS_REGISTER, 
-  //     ASRS_REGISTER);
-  // #endif // CONFIG_GPIO_ALARM_ZONE_4
+  // Контроль сетевого напряжения на X7
+  #if defined(CONFIG_GPIO_ALARM_ZONE_4) && (CONFIG_GPIO_ALARM_ZONE_4 > -1)
+    alarmZoneHandle_t azPower2 = alarmZoneAdd(
+      "Контроль питания", 
+      "power2", 
+      nullptr);
+    alarmResponsesSet(
+      azPower2, 
+      ASM_DISABLED, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+    alarmResponsesSet(
+      azPower2, 
+      ASM_ARMED, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+    alarmResponsesSet(
+      azPower2, 
+      ASM_PERIMETER, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+    alarmResponsesSet(
+      azPower2, 
+      ASM_OUTBUILDINGS, 
+      ASRS_REGISTER, 
+      ASRS_REGISTER);
+  #endif // CONFIG_GPIO_ALARM_ZONE_4
 
-  // // Тревожные кнопки
-  // alarmZoneHandle_t azButtons = alarmZoneAdd("Тревожные кнопки", "buttons", nullptr);
-  // alarmResponsesSet(azButtons, ASM_DISABLED, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
-  // alarmResponsesSet(azButtons, ASM_ARMED, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
-  // alarmResponsesSet(azButtons, ASM_PERIMETER, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
-  // alarmResponsesSet(azButtons, ASM_OUTBUILDINGS, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
+  // Тревожные кнопки
+  alarmZoneHandle_t azButtons = alarmZoneAdd("Тревожные кнопки", "buttons", nullptr);
+  alarmResponsesSet(azButtons, ASM_DISABLED, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
+  alarmResponsesSet(azButtons, ASM_ARMED, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
+  alarmResponsesSet(azButtons, ASM_PERIMETER, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
+  alarmResponsesSet(azButtons, ASM_OUTBUILDINGS, ASRS_ALARM_SIREN, ASRS_ALARM_NOTIFY);
 
 
 
@@ -358,6 +364,9 @@ void alarmInitSensors()
       false);                 // Не требуется подтвеждение с других датчиков
   };
 
+    //QueueHandle_t aaa = alarmTaskQueue();
+    uint32_t aaa = (uint32_t)alarmTaskQueue();
+  rlog_i(logTAG, " AFS completed=%" PRIX32 "\n", aaa);
 
   rlog_i(logTAG, "Initialization of AFS completed");
 }

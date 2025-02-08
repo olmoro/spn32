@@ -13,7 +13,9 @@
 // ------------------------------------------------------------------------
 //                              Версии 
 // ------------------------------------------------------------------------
-#define APP_VERSION "SPN32-20250201.06"
+#define APP_VERSION "SPN32-20250208.08"
+// 20250208.08: Возврат sensors
+// 20250204.05: tsop. 
 // 20250131.05: tsop, TSOP_STATIC_ALLOCATION=1
 // 20250131.04: CONFIG_NO_SENSORS 1
 
@@ -40,8 +42,7 @@
   #define CONFIG_GPIO_BUZZER        -1
   #define CONFIG_GPIO_BUZZER_ACTIVE -1
 
-#else       // Плата SPN.54
-  // Номер выводов периферии, версия платы 023 (с доработкой)
+#else       // Плата SPN.55
   // Светодиоды
   #define CONFIG_GPIO_LED_RED        4    // Красный, катод на GND (7mA)
   #define CONFIG_GPIO_LED_GREEN      2    // Зелёный, катод на GND (5mA)
@@ -166,6 +167,56 @@
 #define NEC_PAYLOAD_ONE_DURATION_1   1690
 #define NEC_REPEAT_CODE_DURATION_0   9000
 #define NEC_REPEAT_CODE_DURATION_1   2250
+
+
+// -----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------- EN - Temperature control ------------------------------------------------
+// --------------------------------------------- RU - Контроль температуры -----------------------------------------------
+// -----------------------------------------------------------------------------------------------------------------------
+// EN: Here you can specify any parameters related to the main task of the device
+// RU: Здесь можно указать вообще любые параметры, связанные с прикладной задачей устройства
+
+// EN: Interval of reading data from sensors in milliseconds
+// RU: Интервал чтения данных с сенсоров в миллисекундах
+#define CONFIG_SENSORS_TASK_CYCLE 30000
+// EN: Use static memory allocation for the task and queue. CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION must be enabled!
+// RU: Использовать статическое выделение памяти под задачу и очередь. Должен быть включен параметр CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION!
+#define CONFIG_SENSORS_STATIC_ALLOCATION 1
+// EN: Stack size for main task
+// RU: Размер стека для главной задачи
+#define CONFIG_SENSORS_TASK_STACK_SIZE 4*1024
+
+// EN: Allow publishing of raw RAW data (no correction or filtering): 0 - only processed value, 1 - always both values, 2 - only when there is processing
+// RU: Разрешить публикацию необработанных RAW-данных (без коррекции и фильтрации): 0 - только обработанное значение, 1 - всегда оба значения, 2 - только когда есть обработка
+#define CONFIG_SENSOR_RAW_ENABLE 1
+// EN: Allow publication of sensor status
+// RU: Разрешить публикацию форматированных данных в виде строки
+#define CONFIG_SENSOR_STRING_ENABLE 0
+// EN: Allow the publication of the time stamp of reading data from the sensor
+// RU: Разрешить публикацию отметки времени чтения данных с сенсора
+#define CONFIG_SENSOR_TIMESTAMP_ENABLE 1
+// EN: Allow the publication of formatted data as "value + time"
+// RU: Разрешить публикацию форматированных данных в виде "значение + время"
+#define CONFIG_SENSOR_TIMESTRING_ENABLE 1
+// EN: Allow dew point calculation and publication
+// RU: Разрешить вычисление и публикацию точки росы
+#define CONFIG_SENSOR_DEWPOINT_ENABLE 0
+// EN: Allow publishing of mixed value, for example "temperature + humidity"
+// RU: Разрешить публикацию смешанного значения, например "температура + влажность"
+#define CONFIG_SENSOR_DISPLAY_ENABLED 1
+// EN: Allow publication of absolute minimum and maximum
+// RU: Разрешить публикацию абсолютного минимума и максимума
+#define CONFIG_SENSOR_EXTREMUMS_ENTIRELY_ENABLE 1
+// EN: Allow publication of daily minimum and maximum
+// RU: Разрешить публикацию ежедневного минимума и максимума
+#define CONFIG_SENSOR_EXTREMUMS_DAILY_ENABLE 1
+// EN: Allow publication of weekly minimum and maximum
+// RU: Разрешить публикацию еженедельного минимума и максимума
+#define CONFIG_SENSOR_EXTREMUMS_WEEKLY_ENABLE 1
+// EN: Publish extremums only when they are changed
+// RU: Публиковать экстеремумы только при их изменении
+#define CONFIG_SENSOR_EXTREMUMS_OPTIMIZED 1
+
 
 
 // ------------------------------------------------------------------------

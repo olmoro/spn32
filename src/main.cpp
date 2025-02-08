@@ -60,7 +60,7 @@
   #include "reBeep.h"
 #endif // CONFIG_GPIO_BUZZER
 // #include "meRmt.h"
-//#include "sensors.h"
+#include "sensors.h"
 //#include "mb_slave.h"
 #include "slave.h"
 #include "security.h"
@@ -142,9 +142,9 @@ extern "C"
     //   vTaskDelay(1);
     // #endif // CONFIG_GPIO_BUZZER
 
-//     // Запуск службы контроля температуры
-// //    sensorsTaskStart();
-//     vTaskDelay(1);
+    // Запуск службы контроля температуры
+    sensorsTaskStart();
+    vTaskDelay(1);
 
     // Запуск службы сигнализации
     alarmStart();
