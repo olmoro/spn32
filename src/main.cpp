@@ -146,9 +146,9 @@ extern "C"
     sensorsTaskStart();
     vTaskDelay(1);
 
-    // Запуск службы сигнализации
-    alarmStart();
-    vTaskDelay(1);
+    // // Запуск службы сигнализации
+    // alarmStart();
+    // vTaskDelay(1);
 
   // Запуск службы modbus_slave
   slaveTaskStart();

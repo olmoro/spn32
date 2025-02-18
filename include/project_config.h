@@ -13,8 +13,9 @@
 // ------------------------------------------------------------------------
 //                              Версии 
 // ------------------------------------------------------------------------
-#define APP_VERSION "SPN32-20250208.08"
-// 20250208.08: Возврат sensors
+#define APP_VERSION "SPN32-20250208.009"
+// 20250208.009: 
+// 20250208.08: Возврат sensors RAM: 21.4% Flash: 72.4%
 // 20250204.05: tsop. 
 // 20250131.05: tsop, TSOP_STATIC_ALLOCATION=1
 // 20250131.04: CONFIG_NO_SENSORS 1
@@ -31,16 +32,16 @@
   // Входы
   #define CONFIG_GPIO_RXIR          35    // Вход ИК датчика
 
-  #define CONFIG_GPIO_TXD1          16    // UART
-  #define CONFIG_GPIO_RXD1          17    // UART
+  // #define CONFIG_GPIO_TXD1          16    // UART
+  // #define CONFIG_GPIO_RXD1          17    // UART
 
-  #define CONFIG_GPIO_TEST_PAD      14    // Test 
+  // #define CONFIG_GPIO_TEST_PAD      14    // Test 
 
   // Отсутствующие на плате ресурсы
-  #define CONFIG_GPIO_I2C           -1
-  #define CONFIG_GPIO_RX433         -1
-  #define CONFIG_GPIO_BUZZER        -1
-  #define CONFIG_GPIO_BUZZER_ACTIVE -1
+  //#define CONFIG_GPIO_I2C           -1
+  //#define CONFIG_GPIO_RX433         -1
+  //#define CONFIG_GPIO_BUZZER        -1
+  //#define CONFIG_GPIO_BUZZER_ACTIVE -1
 
 #else       // Плата SPN.55
   // Светодиоды
@@ -67,9 +68,9 @@
 //                             GPIO
 // ------------------------------------------------------------------------
   // Светодиоды
-  #define CONFIG_GPIO_SYSTEM_LED    CONFIG_GPIO_LED_BLUE  // Системный Синий
-  #define CONFIG_GPIO_EXEC_LED      CONFIG_GPIO_LED_GREEN // зел
-  #define CONFIG_GPIO_ALARM_LED     CONFIG_GPIO_LED_RED   // Красный (мигающий?) сигнал аварии
+  #define CONFIG_GPIO_SYSTEM_LED    CONFIG_GPIO_LED_BLUE    // Системный Синий
+  #define CONFIG_GPIO_EXEC_LED      CONFIG_GPIO_LED_GREEN   // зел
+  #define CONFIG_GPIO_ALARM_LED     CONFIG_GPIO_LED_RED     // Красный (мигающий?) сигнал аварии
 
   // Входы
   #define CONFIG_GPIO_TSOP          CONFIG_GPIO_RXIR        // Вход ИК датчика
@@ -114,29 +115,6 @@
 
 
 
-/* Разрешить публикацию необработанных RAW-данных (без коррекции и фильтрации):
-    0 - только обработанное значение, 
-    1 - всегда оба значения, 
-    2 - только когда есть обработка */
-#define CONFIG_SENSOR_RAW_ENABLE 1
-// Разрешить публикацию форматированных данных в виде строки
-#define CONFIG_SENSOR_STRING_ENABLE 0
-// Разрешить публикацию отметки времени чтения данных с сенсора
-#define CONFIG_SENSOR_TIMESTAMP_ENABLE 1
-// Разрешить публикацию форматированных данных в виде "значение + время"
-#define CONFIG_SENSOR_TIMESTRING_ENABLE 1
-// // Разрешить вычисление и публикацию точки росы
-// #define CONFIG_SENSOR_DEWPOINT_ENABLE 0
-// Разрешить публикацию смешанного значения, например "температура + влажность"
-#define CONFIG_SENSOR_DISPLAY_ENABLED 0
-// Разрешить публикацию абсолютного минимума и максимума
-#define CONFIG_SENSOR_EXTREMUMS_ENTIRELY_ENABLE 1
-// Разрешить публикацию ежедневного минимума и максимума
-#define CONFIG_SENSOR_EXTREMUMS_DAILY_ENABLE 1
-// Разрешить публикацию еженедельного минимума и максимума
-#define CONFIG_SENSOR_EXTREMUMS_WEEKLY_ENABLE 1
-// Публиковать экстеремумы только при их изменении
-#define CONFIG_SENSOR_EXTREMUMS_OPTIMIZED 1
 
 // ------------------------------------------------------------------------
 //                          ИК пульт (TSOP4838)
@@ -266,9 +244,10 @@
  * Раскомментируйте CONFIG_WIFI_SSID и CONFIG_WIFI_PASS, чтобы отключить 
  * автоматическое переключение между wifi-сетями
  * */
-#define CONFIG_WIFI_SSID "HUAWEI-a6mB"
-#define CONFIG_WIFI_PASS "rmbDHxYK"
-
+// #define CONFIG_WIFI_SSID "HUAWEI-a6mB"
+// #define CONFIG_WIFI_PASS "rmbDHxYK"
+// #define CONFIG_WIFI_SSID "RG-WiFi-a272"
+// #define CONFIG_WIFI_PASS "XPr2UkuhP6"
 /** 
  * Режим для нескольких сетей
  * --------------------
@@ -280,10 +259,10 @@
  * перепрошивая и перенастраивая его. 
  * Просто заранее определите все возможные сети.
  * */
-// #define CONFIG_WIFI_1_SSID "WIFI1"
-// #define CONFIG_WIFI_1_PASS "000000000"
-// #define CONFIG_WIFI_2_SSID "WIFI2"
-// #define CONFIG_WIFI_2_PASS "111111111"
+#define CONFIG_WIFI_2_SSID "RG-WiFi-a272"
+#define CONFIG_WIFI_2_PASS "XPr2UkuhP6"
+#define CONFIG_WIFI_SSID "HUAWEI-a6mB"
+#define CONFIG_WIFI_PASS "rmbDHxYK"
 // #define CONFIG_WIFI_3_SSID "WIFI3"
 // #define CONFIG_WIFI_3_PASS "222222222"
 // #define CONFIG_WIFI_4_SSID "WIFI4"
@@ -319,7 +298,7 @@
 //                            Общие параметры 
 // ------------------------------------------------------------------------
 // 
-#define CONFIG_NO_SENSORS 1
+#define CONFIG_NO_SENSORS 0
 
 
 

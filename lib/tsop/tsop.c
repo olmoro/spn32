@@ -274,7 +274,7 @@ void tsopStart(const uint8_t gpioRx, QueueHandle_t queueProc)
                          "tsop_task",
          CONFIG_TSOP_TASK_STACK_SIZE,
                               &_data,    // адрес структуры
-           CONFIG_TASK_PRIORITY_TSOP,
+         CONFIG_TASK_PRIORITY_ALARM + 1, //     CONFIG_TASK_PRIORITY_TSOP,
                        tsopTaskStack,
                      &tsopTaskBuffer);
   #else
