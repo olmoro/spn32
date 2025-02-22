@@ -2,8 +2,8 @@
    Модуль сигнализации с управлением через MQTT и Telegram
 */
 
-#ifndef __ME_ALARM_H__
-#define __ME_ALARM_H__
+#ifndef _ALARM_H_
+#define _ALARM_H_
 
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
@@ -59,7 +59,7 @@ static const uint16_t ASRS_POWER_OFF    = ASR_ALARM_INC | ASR_MQTT_EVENT | ASR_M
 typedef enum {
   AST_WIRED = 0,          // Проводная зона
   AST_RXIR_GENERIC,       //AST_RX433_GENERIC,      // Беспроводной сенсор, без выделения команд
-  AST_RXIR_16A_16C,       //AST_RX433_20A4C,        // Беспроводной сенсор, общая длина кода 24 бит: 20 бит - адрес, последние 4 бита - команда
+  AST_TSOP_16A_16C,       //AST_RX433_20A4C,        // Беспроводной сенсор, общая длина кода 24 бит: 20 бит - адрес, последние 4 бита - команда
   AST_MQTT                // Виртуальный сенсор, получение данных с других устройств через локальный MQTT брокер
 } alarm_sensor_type_t;
 
@@ -313,4 +313,4 @@ bool alarmPostQueueExtId(source_type_t source, uint32_t id, uint8_t value);
 }
 #endif
 
-#endif // __ME_ALARM_H__
+#endif // _ALARM_H_

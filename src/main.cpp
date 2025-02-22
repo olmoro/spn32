@@ -1,7 +1,6 @@
 /*
- * SPDX-FileCopyrightText: 2016-2023 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
+ *  Модуль преобразования интерфейса
+ *          2025 февраль
  */
 
 #include <stdio.h>
@@ -9,25 +8,8 @@
 #include "freertos/task.h"
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "slave.h"
-#include "staff.h"
 
 
-// void app_main(void)
-// {
-//   // Запуск службы modbus_slave
-//   slaveTaskStart();
-//   vTaskDelay(1);
-
-//   // Запуск службы staff
-// //  staffTaskStart();
-// //  vTaskDelay(1);
-// }
-
-/*
-   Модуль преобразования интерфейса
-   2025 январь
-*/
 
 #include "stdlib.h"
 #include "esp_log.h"
@@ -47,25 +29,29 @@
 #include "reSysInfo.h"
 #include "reScheduler.h"
 #include "meCerts.h"
+
 #if CONFIG_PINGER_ENABLE
   #include "rePinger.h"
 #endif // CONFIG_PINGER_ENABLE
+
 #if CONFIG_TELEGRAM_ENABLE
   #include "reTgSend.h"
 #endif // CONFIG_TELEGRAM_ENABLE
-  #if CONFIG_DATASEND_ENABLE
-#include "reDataSend.h"
-  #endif // CONFIG_DATASEND_ENABLE
-#if defined(CONFIG_GPIO_BUZZER) && (CONFIG_GPIO_BUZZER > -1)
-  #include "reBeep.h"
-#endif // CONFIG_GPIO_BUZZER
-// #include "meRmt.h"
-#include "sensors.h"
-//#include "mb_slave.h"
-#include "slave.h"
-#include "security.h"
 
-// Главная функция
+// #if CONFIG_DATASEND_ENABLE
+//   #include "reDataSend.h"
+// #endif // CONFIG_DATASEND_ENABLE
+
+// #if defined(CONFIG_GPIO_BUZZER) && (CONFIG_GPIO_BUZZER > -1)
+//   #include "reBeep.h"
+// #endif // CONFIG_GPIO_BUZZER
+
+#include "target.h"     // "sensors.h"
+#include "signals.h"    // "security.h"
+
+#include "slave.h"
+#include "staff.h"
+
 extern "C"
 { 
   void app_main(void) 
@@ -130,35 +116,21 @@ extern "C"
       vTaskDelay(1);
     #endif // CONFIG_TELEGRAM_ENABLE
 
-    // // Запуск службы отправки данных на внешние сервисы
-    // #if CONFIG_DATASEND_ENABLE
-    //   dsTaskCreate(false);
-    //   vTaskDelay(1);
-    // #endif // CONFIG_DATASEND_ENABLE
-
-    // // Запуск службы пищалки
-    // #if defined(CONFIG_GPIO_BUZZER) && (CONFIG_GPIO_BUZZER > -1)
-    //   beepTaskCreate(CONFIG_GPIO_BUZZER);
-    //   vTaskDelay(1);
-    // #endif // CONFIG_GPIO_BUZZER
-
-    // Запуск службы контроля температуры
-    sensorsTaskStart();
+    // Запуск целевой программы (будет здесь)
+    targetTaskStart();
     vTaskDelay(1);
 
-    // // Запуск службы сигнализации
-    // alarmStart();
-    // vTaskDelay(1);
+    // Запуск службы сигнализации
+    alarmStart();  //  signalsStart()
+    vTaskDelay(1);
 
-  // Запуск службы modbus_slave
-  slaveTaskStart();
-  vTaskDelay(1);
+    // Запуск службы modbus_slave
+    slaveTaskStart();
+    vTaskDelay(1);
 
-  // Запуск службы staff
-//  staffTaskStart();
-//  vTaskDelay(1);
-
-
+    // Запуск службы staff
+    //  staffTaskStart();
+    //  vTaskDelay(1);
 
     // Подключение к WiFi AP
     if (!wifiStart()) 

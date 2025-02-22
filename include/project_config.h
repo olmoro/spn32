@@ -13,8 +13,11 @@
 // ------------------------------------------------------------------------
 //                              Версии 
 // ------------------------------------------------------------------------
-#define APP_VERSION "SPN32-20250208.009"
-// 20250208.009: 
+#define APP_VERSION "SPN32-20250222.012"
+// 20250218.012: Повтор
+// 20250218.011: Переименование задачи sensorsTask в targetTask
+// 20250218.010: Служба сигнализации отключена      RAM: 16.9% Flash: 70.4%
+// 20250208.009: Конфиг выводов под spn.55
 // 20250208.08: Возврат sensors RAM: 21.4% Flash: 72.4%
 // 20250204.05: tsop. 
 // 20250131.05: tsop, TSOP_STATIC_ALLOCATION=1
@@ -30,7 +33,12 @@
   #define CONFIG_GPIO_LED_BLUE      12    // Синий,   катод на GND (4mA)
 
   // Входы
-  #define CONFIG_GPIO_RXIR          35    // Вход ИК датчика
+  #define CONFIG_GPIO_TSOP          35    // Вход ИК датчика
+
+  #define CONFIG_GPIO_ALARM_SIREN   16
+  #define CONFIG_GPIO_ALARM_FLASH   17
+
+
 
   // #define CONFIG_GPIO_TXD1          16    // UART
   // #define CONFIG_GPIO_RXD1          17    // UART
@@ -73,7 +81,8 @@
   #define CONFIG_GPIO_ALARM_LED     CONFIG_GPIO_LED_RED     // Красный (мигающий?) сигнал аварии
 
   // Входы
-  #define CONFIG_GPIO_TSOP          CONFIG_GPIO_RXIR        // Вход ИК датчика
+  //#define CONFIG_GPIO_TSOP          CONFIG_GPIO_RXIR        // Вход ИК датчика
+
 
   // // MODBUS
   // #define CONFIG_MB_UART_RXD        CONFIG_UART1_RXD      // 
@@ -103,9 +112,9 @@
 
 // Интервал чтения данных с сенсоров в миллисекундах
 #define CONFIG_SLAVE_TASK_CYCLE 30000
-/* Использовать статическое выделение памяти под задачу и очередь. 
-     Должен быть включен параметр CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION! */
-#define CONFIG_SLAVE_STATIC_ALLOCATION 1
+// /* Использовать статическое выделение памяти под задачу и очередь. 
+//      Должен быть включен параметр CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION! */
+// #define CONFIG_SLAVE_STATIC_ALLOCATION 1
 // Размер стека для главной задачи
 #define CONFIG_SLAVE_TASK_STACK_SIZE   4*1024
 // Приоритеты прикладных задач
@@ -147,22 +156,17 @@
 #define NEC_REPEAT_CODE_DURATION_1   2250
 
 
-// -----------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------- EN - Temperature control ------------------------------------------------
-// --------------------------------------------- RU - Контроль температуры -----------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
-// EN: Here you can specify any parameters related to the main task of the device
-// RU: Здесь можно указать вообще любые параметры, связанные с прикладной задачей устройства
+// ------------------------------------------------------------------------
+//          Прикладная задача (target) 
+// ------------------------------------------------------------------------
+// Здесь можно указать вообще любые параметры, связанные с прикладной задачей устройства
 
-// EN: Interval of reading data from sensors in milliseconds
-// RU: Интервал чтения данных с сенсоров в миллисекундах
-#define CONFIG_SENSORS_TASK_CYCLE 30000
-// EN: Use static memory allocation for the task and queue. CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION must be enabled!
-// RU: Использовать статическое выделение памяти под задачу и очередь. Должен быть включен параметр CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION!
-#define CONFIG_SENSORS_STATIC_ALLOCATION 1
-// EN: Stack size for main task
-// RU: Размер стека для главной задачи
-#define CONFIG_SENSORS_TASK_STACK_SIZE 4*1024
+// Интервал чтения данных с сенсоров в миллисекундах
+#define CONFIG_TARGET_TASK_CYCLE 30000
+// Использовать статическое выделение памяти под задачу и очередь. Должен быть включен параметр CONFIG_FREERTOS_SUPPORT_STATIC_ALLOCATION!
+#define CONFIG_TARGET_STATIC_ALLOCATION 1
+// Размер стека для главной задачи
+#define CONFIG_TARGET_TASK_STACK_SIZE 4*1024
 
 // EN: Allow publishing of raw RAW data (no correction or filtering): 0 - only processed value, 1 - always both values, 2 - only when there is processing
 // RU: Разрешить публикацию необработанных RAW-данных (без коррекции и фильтрации): 0 - только обработанное значение, 1 - всегда оба значения, 2 - только когда есть обработка
@@ -360,13 +364,13 @@
 
 /***************** MQTT : sensors ********************/
 // Интервал публикации данных с сенсоров в секундах
-#define CONFIG_MQTT_SENSORS_SEND_INTERVAL 600
+#define CONFIG_MQTT_TARGET_SEND_INTERVAL 600
 // QOS для данных с сенсоров
-#define CONFIG_MQTT_SENSORS_QOS 1
-#define CONFIG_MQTT_SENSORS_LOCAL_QOS 2
+#define CONFIG_MQTT_TARGET_QOS 1
+#define CONFIG_MQTT_TARGET_LOCAL_QOS 2
 // Сохранять на брокере последние отправленные данные
-#define CONFIG_MQTT_SENSORS_RETAINED 1
-#define CONFIG_MQTT_SENSORS_LOCAL_RETAINED 0
+#define CONFIG_MQTT_TARGET_RETAINED 1
+#define CONFIG_MQTT_TARGET_LOCAL_RETAINED 0
 
 
 // ------------------------------------------------------------------------

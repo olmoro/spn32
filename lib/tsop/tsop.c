@@ -214,9 +214,9 @@ static void tsopHandler( void *pvParameters )
       if ( _queueProc )
       {
         _data.source = IDS_TSOP;                       /* Идентификатор источника */
-        _data.rxIR.value = (s_nec_code_address << 16) | s_nec_code_command;  /* uint32_t value */
+        _data.tsop.value = (s_nec_code_address << 16) | s_nec_code_command;  /* uint32_t value */
         
-        rlog_i(TAG_RECEIVER, " value=%" PRIX32 "\n", _data.rxIR.value);
+        rlog_i(TAG_RECEIVER, " value=%" PRIX32 "\n", _data.tsop.value);
 
           //      // Очистка буфера ??
 

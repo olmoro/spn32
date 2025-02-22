@@ -5,6 +5,7 @@
 
 
 #include "slave.h"
+#include "project_config.h"
 #include <stdio.h>
 #include <stdint.h>
 #include "esp_err.h"
@@ -213,18 +214,49 @@ static void slave_task(void *arg)
 
 
 
+// void slaveTaskStart()
+// {
+//   //xTaskCreate(slave_task, "mb_slave", 4096, NULL, 10, NULL);
+
+//   static StackType_t slTaskStack[4096];
+//   static StaticTask_t slTaskBuffer;
+
+//   xTaskCreateStatic(slave_task,
+//                     "mb_slave",
+//                           4096,
+//                           NULL,
+//                             10,
+//                    slTaskStack,
+//                  &slTaskBuffer);
+// }
+
 void slaveTaskStart()
 {
-  //xTaskCreate(slave_task, "mb_slave", 4096, NULL, 10, NULL);
-
-  static StackType_t slTaskStack[4096];
+  static StackType_t slTaskStack[CONFIG_SLAVE_TASK_STACK_SIZE];
   static StaticTask_t slTaskBuffer;
 
-  xTaskCreateStatic(slave_task,
-                    "mb_slave",
-                          4096,
-                          NULL,
-                            10,
-                   slTaskStack,
-                 &slTaskBuffer);
+  // Создание статической задачи
+  TaskHandle_t task_handle = xTaskCreateStaticPinnedToCore(
+                              slave_task,   // Функция задачи
+                              "mb_slave",   // Имя задачи
+            CONFIG_SLAVE_TASK_STACK_SIZE,   // Размер стека
+                                    NULL,   // Параметры
+              CONFIG_TASK_PRIORITY_SLAVE,   // Приоритет
+                             slTaskStack,   // Буфер стека
+                           &slTaskBuffer,   // Буфер задачи
+                          tskNO_AFFINITY);  // Без привязки к ядру или CONFIG_TASK_CORE_SLAVE
+
+  if (!task_handle) {
+      ESP_LOGE(TAG, "Failed to create Slave Modbus task");
+      return;
+  }
+
+  ESP_LOGI(TAG, "Slave Modbus task created successfully");
 }
+
+
+void sessionRequest()
+{
+
+}
+

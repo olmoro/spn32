@@ -1,4 +1,4 @@
-#include "sensors.h"
+#include "target.h"
 #include "strings.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -28,14 +28,14 @@
 // #include "reElTariffs.h"
 // #endif // CONFIG_ELTARIFFS_ENABLED
 
-static const char* logTAG = "SENS";
-static const char* sensorsTaskName = "sensors";
-static TaskHandle_t _sensorsTask;
-static bool _sensorsNeedStore = false;
+static const char* logTAG = "TARGET";
+static const char* targetTaskName = "target";
+static TaskHandle_t _targetTask;
+static bool _targetNeedStore = false;
 
-// -----------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------ Термостат ------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+//  Термостат 
+// ------------------------------------------------------------------------
 
 // void boilerStateChange(rLoadController *ctrl, bool state, time_t duration)
 // {
@@ -66,7 +66,7 @@ static bool _sensorsNeedStore = false;
 //     boilerMqttPublish                   // Функция обратного вызова, которая будет вызывана при необходимости отправить данные на MQTT брокер
 //   );
 
-// void sensorsInitRelays()
+// void targetInitRelays()
 // {
 //   // #if defined(CONFIG_ELTARIFFS_ENABLED) && CONFIG_ELTARIFFS_ENABLED
 //   // lcBoiler.setPeriodStartDay(elTariffsGetReportDayAddress());
@@ -75,7 +75,7 @@ static bool _sensorsNeedStore = false;
 //   lcBoiler.loadInit(false);
 // }
 
-// bool sensorsBoilerTempCheck()
+// bool targetBoilerTempCheck()
 // {
 //   // Получаем текущее состояние нагрузки
 //   bool oldState = lcBoiler.getState();
@@ -99,7 +99,7 @@ static bool _sensorsNeedStore = false;
 //   return false;
 // }
 
-// void sensorsBoilerControl()
+// void targetBoilerControl()
 // {
 //   bool newState;
 
@@ -117,11 +117,11 @@ static bool _sensorsNeedStore = false;
 //   } 
 //   // Только управление по температуре (без учета расписания)
 //   else if (thermostatMode == THERMOSTAT_TEMP) {
-//     newState = sensorsBoilerTempCheck();
+//     newState = targetBoilerTempCheck();
 //   } 
 //   // Управление по расписанию и температуре одновременно
 //   else if (thermostatMode == THERMOSTAT_TIME_AND_TEMP) {
-//     newState = checkTimespanNowEx(thermostatTimespan, true) && sensorsBoilerTempCheck();
+//     newState = checkTimespanNowEx(thermostatTimespan, true) && targetBoilerTempCheck();
 //   } 
 //   // Защита от ошибки программиста (а вдруг вы добавили еще режим и забыли написать обработчик?)
 //   else {
@@ -132,17 +132,17 @@ static bool _sensorsNeedStore = false;
 //   lcBoiler.loadSetState(newState, false, true);
 // }
 
-// -----------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------- Сенсоры ------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+//  Сенсоры 
+// ------------------------------------------------------------------------
 
 paramsGroupHandle_t pgSensors;
 paramsGroupHandle_t pgIntervals;
 paramsGroupHandle_t pgTempMonitor;
 
-// static bool sensorsPublish(rSensor *sensor, char* topic, char* payload, const bool free_topic, const bool free_payload)
+// static bool targetPublish(rSensor *sensor, char* topic, char* payload, const bool free_topic, const bool free_payload)
 // {
-//   return mqttPublish(topic, payload, CONFIG_MQTT_SENSORS_QOS, CONFIG_MQTT_SENSORS_RETAINED, free_topic, free_payload);
+//   return mqttPublish(topic, payload, CONFIG_MQTT_TARGET_QOS, CONFIG_MQTT_TARGET_RETAINED, free_topic, free_payload);
 // }
 
 // static bool monitorPublish(reRangeMonitor *monitor, char* topic, char* payload, bool free_topic, bool free_payload)
@@ -150,7 +150,7 @@ paramsGroupHandle_t pgTempMonitor;
 //   return mqttPublish(topic, payload, CONTROL_TEMP_QOS, CONTROL_TEMP_RETAINED, free_topic, free_payload);
 // }
 
-static void sensorsMqttTopicsCreate(bool primary)
+static void targetMqttTopicsCreate(bool primary)
 {
   // sensorOutdoor.topicsCreate(primary);
   // sensorIndoor.topicsCreate(primary);
@@ -164,7 +164,7 @@ static void sensorsMqttTopicsCreate(bool primary)
   // lcBoiler.mqttTopicCreate(primary, CONTROL_THERMOSTAT_LOCAL, CONTROL_THERMOSTAT_BOILER_TOPIC, nullptr, nullptr);
 }
 
-static void sensorsMqttTopicsFree()
+static void targetMqttTopicsFree()
 {
   // sensorOutdoor.topicsFree();
   // sensorIndoor.topicsFree();
@@ -208,9 +208,9 @@ static void sensorsMqttTopicsFree()
 //   }
 // }
 
-static void sensorsStoreData()
+static void targetStoreData()
 {
-  rlog_i(logTAG, "Store sensors data");
+  rlog_i(logTAG, "Store target data");
 
   // sensorOutdoor.nvsStoreExtremums(SENSOR_OUTDOOR_KEY);
   // sensorIndoor.nvsStoreExtremums(SENSOR_INDOOR_KEY);
@@ -222,7 +222,7 @@ static void sensorsStoreData()
   // lcBoiler.countersNvsStore();
 }
 
-static void sensorsInitParameters()
+static void targetInitParameters()
 {
   // Группы параметров
   pgSensors = paramsRegisterGroup(nullptr, 
@@ -280,7 +280,7 @@ static void sensorsInitParameters()
   // };
 }
 
-static void sensorsInitSensors()
+static void targetInitSensors()
 {
   // Улица
   // static rTemperatureItem siOutdoorTemp(nullptr, CONFIG_SENSOR_TEMP_NAME, CONFIG_FORMAT_TEMP_UNIT,
@@ -306,7 +306,7 @@ static void sensorsInitSensors()
   // sensorOutdoor.initExtItems(SENSOR_OUTDOOR_NAME, SENSOR_OUTDOOR_TOPIC, false,
   //   DHT_DHT22, CONFIG_GPIO_AM2320, false, CONFIG_GPIO_RELAY_AM2320, 1,
   //   &siOutdoorHum, &siOutdoorTemp,
-  //   3000, SENSOR_OUTDOOR_ERRORS_LIMIT, nullptr, sensorsPublish);
+  //   3000, SENSOR_OUTDOOR_ERRORS_LIMIT, nullptr, targetPublish);
   // sensorOutdoor.registerParameters(pgSensors, SENSOR_OUTDOOR_KEY, SENSOR_OUTDOOR_TOPIC, SENSOR_OUTDOOR_NAME);
   // sensorOutdoor.nvsRestoreExtremums(SENSOR_OUTDOOR_KEY);
 
@@ -345,7 +345,7 @@ static void sensorsInitSensors()
   //   SENSOR_INDOOR_BUS, SENSOR_INDOOR_ADDRESS, 
   //   BME280_MODE_FORCED, BME280_STANDBY_1000ms, BME280_FLT_NONE, BME280_OSM_X4, BME280_OSM_X4, BME280_OSM_X4,
   //   &siIndoorPress, &siIndoorTemp, &siIndoorHum, 
-  //   3000, SENSOR_INDOOR_ERRORS_LIMIT, nullptr, sensorsPublish);
+  //   3000, SENSOR_INDOOR_ERRORS_LIMIT, nullptr, targetPublish);
   // sensorIndoor.registerParameters(pgSensors, SENSOR_INDOOR_KEY, SENSOR_INDOOR_TOPIC, SENSOR_INDOOR_NAME);
   // sensorIndoor.nvsRestoreExtremums(SENSOR_INDOOR_KEY);
   // tempMonitorIndoor.nvsRestore(CONTROL_TEMP_INDOOR_KEY);
@@ -367,7 +367,7 @@ static void sensorsInitSensors()
   // sensorBoiler.initExtItems(SENSOR_BOILER_NAME, SENSOR_BOILER_TOPIC, false,
   //   (gpio_num_t)CONFIG_GPIO_DS18B20, ONEWIRE_NONE, 1, DS18x20_RESOLUTION_12_BIT, true, 
   //   &siBoilerTemp,
-  //   3000, SENSOR_BOILER_ERRORS_LIMIT, nullptr, sensorsPublish);
+  //   3000, SENSOR_BOILER_ERRORS_LIMIT, nullptr, targetPublish);
   // sensorBoiler.registerParameters(pgSensors, SENSOR_BOILER_KEY, SENSOR_BOILER_TOPIC, SENSOR_BOILER_NAME);
   // sensorBoiler.nvsRestoreExtremums(SENSOR_BOILER_KEY);
   // tempMonitorBoiler.nvsRestore(CONTROL_TEMP_BOILER_KEY);
@@ -375,35 +375,35 @@ static void sensorsInitSensors()
   // tempMonitorBoiler.mqttSetCallback(monitorPublish);
   // tempMonitorBoiler.paramsRegister(pgTempMonitor, CONTROL_TEMP_BOILER_KEY, CONTROL_TEMP_BOILER_TOPIC, CONTROL_TEMP_BOILER_FRIENDLY);
 
-  // espRegisterShutdownHandler(sensorsStoreData); // #2
+  // espRegisterShutdownHandler(targetStoreData); // #2
 }
 
-// -----------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------- MQTT ---------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+//  MQTT 
+// ------------------------------------------------------------------------
 
-static void sensorsMqttEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+static void targetMqttEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
   // MQTT connected
   if (event_id == RE_MQTT_CONNECTED) {
     re_mqtt_event_data_t* data = (re_mqtt_event_data_t*)event_data;
-    sensorsMqttTopicsCreate(data->primary);
+    targetMqttTopicsCreate(data->primary);
   } 
   // MQTT disconnected
   else if ((event_id == RE_MQTT_CONN_LOST) || (event_id == RE_MQTT_CONN_FAILED)) {
-    sensorsMqttTopicsFree();
+    targetMqttTopicsFree();
   }
 }
 
-static void sensorsTimeEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+static void targetTimeEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
   if (event_id == RE_TIME_START_OF_DAY) {
-    _sensorsNeedStore = true;
+    _targetNeedStore = true;
   };
   // lcBoiler.countersTimeEventHandler(event_id, event_data);
 }
 
-// static void sensorsResetExtremumsSensor(rSensor* sensor, const char* sensor_name, uint8_t mode) 
+// static void targetResetExtremumsSensor(rSensor* sensor, const char* sensor_name, uint8_t mode) 
 // { 
 //   if (mode == 0) {
 //     sensor->resetExtremumsTotal();
@@ -432,7 +432,7 @@ static void sensorsTimeEventHandler(void* arg, esp_event_base_t event_base, int3
 //   };
 // }
 
-static void sensorsResetExtremumsSensors(uint8_t mode)
+static void targetResetExtremumsSensors(uint8_t mode)
 {
   if (mode == 0) {
     // sensorOutdoor.resetExtremumsTotal();
@@ -469,7 +469,7 @@ static void sensorsResetExtremumsSensors(uint8_t mode)
   };
 };
 
-static void sensorsCommandsEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+static void targetCommandsEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
   if ((event_id == RE_SYS_COMMAND) && (event_data)) {
     char* buf = malloc_string((char*)event_data);
@@ -512,16 +512,16 @@ static void sensorsCommandsEventHandler(void* arg, esp_event_base_t event_base, 
 
         // Определение сенсора
         if ((sensor == nullptr) || (strcasecmp(sensor, CONFIG_SENSOR_COMMAND_SENSORS_PREFIX) == 0)) {
-          sensorsResetExtremumsSensors(imode);
+          targetResetExtremumsSensors(imode);
         } else {
           // if (strcasecmp(sensor, SENSOR_OUTDOOR_TOPIC) == 0) {
-          //   sensorsResetExtremumsSensor(&sensorOutdoor, SENSOR_OUTDOOR_TOPIC, imode);
+          //   targetResetExtremumsSensor(&sensorOutdoor, SENSOR_OUTDOOR_TOPIC, imode);
           // } else 
           // if (strcasecmp(sensor, SENSOR_INDOOR_TOPIC) == 0) {
-          //   sensorsResetExtremumsSensor(&sensorIndoor, SENSOR_INDOOR_TOPIC, imode);
+          //   targetResetExtremumsSensor(&sensorIndoor, SENSOR_INDOOR_TOPIC, imode);
           // } else 
           // if (strcasecmp(sensor, SENSOR_BOILER_TOPIC) == 0) {
-          //   sensorsResetExtremumsSensor(&sensorBoiler, SENSOR_BOILER_TOPIC, imode);
+          //   targetResetExtremumsSensor(&sensorBoiler, SENSOR_BOILER_TOPIC, imode);
           // } else 
           {
             rlog_w(logTAG, "Sensor [ %s ] not found", sensor);
@@ -537,90 +537,55 @@ static void sensorsCommandsEventHandler(void* arg, esp_event_base_t event_base, 
   };
 }
 
-static void sensorsOtaEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+static void targetOtaEventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
   if ((event_id == RE_SYS_OTA) && (event_data)) {
     re_system_event_data_t* data = (re_system_event_data_t*)event_data;
     if (data->type == RE_SYS_SET) {
-      sensorsTaskSuspend();
+      targetTaskSuspend();
     } else {
-      sensorsTaskResume();
+      targetTaskResume();
     };
   };
 }
 
-bool sensorsEventHandlersRegister()
+bool targetEventHandlersRegister()
 {
-  return eventHandlerRegister(RE_MQTT_EVENTS, ESP_EVENT_ANY_ID, &sensorsMqttEventHandler, nullptr) 
-      && eventHandlerRegister(RE_TIME_EVENTS, RE_TIME_START_OF_DAY, &sensorsTimeEventHandler, nullptr)
-      && eventHandlerRegister(RE_SYSTEM_EVENTS, RE_SYS_COMMAND, &sensorsCommandsEventHandler, nullptr)
-      && eventHandlerRegister(RE_SYSTEM_EVENTS, RE_SYS_OTA, &sensorsOtaEventHandler, nullptr);
+  return eventHandlerRegister(RE_MQTT_EVENTS, ESP_EVENT_ANY_ID, &targetMqttEventHandler, nullptr) 
+      && eventHandlerRegister(RE_TIME_EVENTS, RE_TIME_START_OF_DAY, &targetTimeEventHandler, nullptr)
+      && eventHandlerRegister(RE_SYSTEM_EVENTS, RE_SYS_COMMAND, &targetCommandsEventHandler, nullptr)
+      && eventHandlerRegister(RE_SYSTEM_EVENTS, RE_SYS_OTA, &targetOtaEventHandler, nullptr);
 }
 
-// -----------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------- Задача --------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+//                            Задача 
+// ------------------------------------------------------------------------
 
-void sensorsTaskExec(void *pvParameters)
+void targetTaskExec(void *pvParameters)
 {
   static TickType_t prevTicks = xTaskGetTickCount();
 
-  // -------------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
   // Инициализация параметров
-  // -------------------------------------------------------------------------------------------------------
-  sensorsInitParameters();
+  // ------------------------------------------------------------------------
+  targetInitParameters();
 
-  // -------------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
   // Инициализация сенсоров 
-  // -------------------------------------------------------------------------------------------------------
-  sensorsInitSensors();
+  // ------------------------------------------------------------------------
+  targetInitSensors();
 
-  // // -------------------------------------------------------------------------------------------------------
+  // // ------------------------------------------------------------------------
   // // Инициализация термостата 
-  // // -------------------------------------------------------------------------------------------------------
-  // sensorsInitRelays();
+  // // ------------------------------------------------------------------------
+  // targetInitRelays();
 
-  // -------------------------------------------------------------------------------------------------------
-  // Инициализация контроллеров
-  // -------------------------------------------------------------------------------------------------------
-  // Инициализация контроллеров OpenMon
-  // #if CONFIG_OPENMON_ENABLE
-  //   dsChannelInit(EDS_OPENMON, 
-  //     CONFIG_OPENMON_CTR01_ID, CONFIG_OPENMON_CTR01_TOKEN, 
-  //     CONFIG_OPENMON_MIN_INTERVAL, CONFIG_OPENMON_ERROR_INTERVAL);
-  // #endif // CONFIG_OPENMON_ENABLE
   
-  // // Инициализация контроллеров NarodMon
-  // #if CONFIG_NARODMON_ENABLE
-  //   dsChannelInit(EDS_NARODMON, 
-  //     CONFIG_NARODMON_DEVICE01_ID, CONFIG_NARODMON_DEVICE01_KEY, 
-  //     CONFIG_NARODMON_MIN_INTERVAL, CONFIG_NARODMON_ERROR_INTERVAL);
-  // #endif // CONFIG_NARODMON_ENABLE
-
-  // Инициализация каналов ThingSpeak
-  // #if CONFIG_THINGSPEAK_ENABLE
-  //   dsChannelInit(EDS_THINGSPEAK, 
-  //     CONFIG_THINGSPEAK_CHANNEL01_ID, CONFIG_THINGSPEAK_CHANNEL01_KEY, 
-  //     CONFIG_THINGSPEAK_MIN_INTERVAL, CONFIG_THINGSPEAK_ERROR_INTERVAL);
-  // #endif // CONFIG_THINGSPEAK_ENABLE
-
-  // -------------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
   // Таймеры публикции данных с сенсоров
-  // -------------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
   esp_timer_t mqttPubTimer;
   timerSet(&mqttPubTimer, iMqttPubInterval*1000);
-  // #if CONFIG_OPENMON_ENABLE
-  //   esp_timer_t omSendTimer;
-  //   timerSet(&omSendTimer, iOpenMonInterval*1000);
-  // #endif // CONFIG_OPENMON_ENABLE
-  // #if CONFIG_NARODMON_ENABLE
-  //   esp_timer_t nmSendTimer;
-  //   timerSet(&nmSendTimer, iNarodMonInterval*1000);
-  // #endif // CONFIG_NARODMON_ENABLE
-  // #if CONFIG_THINGSPEAK_ENABLE
-  //   esp_timer_t tsSendTimer;
-  //   timerSet(&tsSendTimer, iThingSpeakInterval*1000);
-  // #endif // CONFIG_THINGSPEAK_ENABLE
 
   while (1) {
     // -----------------------------------------------------------------------------------------------------
@@ -651,11 +616,11 @@ void sensorsTaskExec(void *pvParameters)
     //     sensorBoiler.getExtremumsDaily(false).maxValue.filteredValue);
     // };
 
-    // // -----------------------------------------------------------------------------------------------------
-    // // Контроль температуры
-    // // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Контроль температуры
+    // ------------------------------------------------------------------------
 
-    // sensorsBoilerControl();
+    // targetBoilerControl();
 
     // if (sensorIndoor.getStatus() == SENSOR_STATUS_OK) {
     //   tempMonitorIndoor.checkValue(sensorIndoor.getValue2(false).filteredValue);
@@ -664,18 +629,18 @@ void sensorsTaskExec(void *pvParameters)
     //   tempMonitorBoiler.checkValue(sensorBoiler.getValue(false).filteredValue);
     // };
 
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Сохранение данных сенсоров
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-    if (_sensorsNeedStore) {
-      _sensorsNeedStore = false;
-      sensorsStoreData();
+    if (_targetNeedStore) {
+      _targetNeedStore = false;
+      targetStoreData();
     };
 
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Публикация данных с сенсоров
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     // MQTT брокер
     if (esp_heap_free_check() && statesMqttIsConnected() && timerTimeout(&mqttPubTimer)) {
@@ -688,133 +653,31 @@ void sensorsTaskExec(void *pvParameters)
       // lcBoiler.mqttPublish();
     };
 
-    // // open-monitoring.online
-    // #if CONFIG_OPENMON_ENABLE
-    //   if (statesInetIsAvailabled() && timerTimeout(&omSendTimer)) {
-    //     timerSet(&omSendTimer, iOpenMonInterval*1000);
-    //     char * omValues = nullptr;
-    //     // Улица
-    //     if (sensorOutdoor.getStatus() == SENSOR_STATUS_OK) {
-    //       omValues = concat_strings_div(omValues, 
-    //         malloc_stringf("p1=%.3f&p2=%.2f", 
-    //           sensorOutdoor.getValue2(false).filteredValue, sensorOutdoor.getValue1(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Комната
-    //     if (sensorIndoor.getStatus() == SENSOR_STATUS_OK) {
-    //       omValues = concat_strings_div(omValues, 
-    //         malloc_stringf("p3=%.3f&p4=%.2f", 
-    //           sensorIndoor.getValue2(false).filteredValue, sensorIndoor.getValue1(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Котёл
-    //     if (sensorBoiler.getStatus() == SENSOR_STATUS_OK) {
-    //       omValues = concat_strings_div(omValues, 
-    //         malloc_stringf("p5=%.3f", 
-    //           sensorBoiler.getValue(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Отправляем данные
-    //     if (omValues) {
-    //       dsSend(EDS_OPENMON, CONFIG_OPENMON_CTR01_ID, omValues, false); 
-    //       free(omValues);
-    //     };
-    //   };
-    // #endif // CONFIG_OPENMON_ENABLE
-
-    // // narodmon.ru
-    // #if CONFIG_NARODMON_ENABLE
-    //   if (statesInetIsAvailabled() && timerTimeout(&nmSendTimer)) {
-    //     timerSet(&nmSendTimer, iNarodMonInterval*1000);
-    //     char * nmValues = nullptr;
-    //     // Улица
-    //     if (sensorOutdoor.getStatus() == SENSOR_STATUS_OK) {
-    //       nmValues = concat_strings_div(nmValues, 
-    //         malloc_stringf("Tout=%.2f&Hout=%.2f", 
-    //           sensorOutdoor.getValue2(false).filteredValue, sensorOutdoor.getValue1(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Комната
-    //     if (sensorIndoor.getStatus() == SENSOR_STATUS_OK) {
-    //       nmValues = concat_strings_div(nmValues, 
-    //         malloc_stringf("Tin=%.2f&Hin=%.2f", 
-    //           sensorIndoor.getValue2(false).filteredValue, sensorIndoor.getValue1(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Котёл
-    //     if (sensorBoiler.getStatus() == SENSOR_STATUS_OK) {
-    //       nmValues = concat_strings_div(nmValues, 
-    //         malloc_stringf("Tboiler=%.2f", 
-    //           sensorBoiler.getValue(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Отправляем данные
-    //     if (nmValues) {
-    //       dsSend(EDS_NARODMON, CONFIG_NARODMON_DEVICE01_ID, nmValues, false); 
-    //       free(nmValues);
-    //     };
-    //   };
-    // #endif // CONFIG_NARODMON_ENABLE
-
-    // thingspeak.com
-    // #if CONFIG_THINGSPEAK_ENABLE
-    //   if (statesInetIsAvailabled() && timerTimeout(&tsSendTimer)) {
-    //     timerSet(&tsSendTimer, iThingSpeakInterval*1000);
-
-    //     char * tsValues = nullptr;
-    //     // Улица
-    //     if (sensorOutdoor.getStatus() == SENSOR_STATUS_OK) {
-    //       tsValues = concat_strings_div(tsValues, 
-    //         malloc_stringf("field1=%.3f&field2=%.2f", 
-    //           sensorOutdoor.getValue2(false).filteredValue, sensorOutdoor.getValue1(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Комната
-    //     if (sensorIndoor.getStatus() == SENSOR_STATUS_OK) {
-    //       tsValues = concat_strings_div(tsValues, 
-    //         malloc_stringf("field3=%.3f&field4=%.2f", 
-    //           sensorIndoor.getValue2(false).filteredValue, sensorIndoor.getValue1(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Котёл
-    //     if (sensorBoiler.getStatus() == SENSOR_STATUS_OK) {
-    //       tsValues = concat_strings_div(tsValues, 
-    //         malloc_stringf("field5=%.3f", 
-    //           sensorBoiler.getValue(false).filteredValue),
-    //         "&");
-    //     };
-    //     // Отправляем данные
-    //     if (tsValues) {
-    //       dsSend(EDS_THINGSPEAK, CONFIG_THINGSPEAK_CHANNEL01_ID, tsValues, false); 
-    //       free(tsValues);
-    //     };
-    //   };
-    // #endif // CONFIG_THINGSPEAK_ENABLE
     
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Ожидание
-    // -----------------------------------------------------------------------------------------------------
-    vTaskDelayUntil(&prevTicks, pdMS_TO_TICKS(CONFIG_SENSORS_TASK_CYCLE));
+    // ------------------------------------------------------------------------
+    vTaskDelayUntil(&prevTicks, pdMS_TO_TICKS(CONFIG_TARGET_TASK_CYCLE));
   };
 
   vTaskDelete(nullptr);
   espRestart(RR_UNKNOWN);
 }
 
-bool sensorsTaskStart()
+bool targetTaskStart()
 {
-  #if CONFIG_SENSORS_STATIC_ALLOCATION
-    static StaticTask_t sensorsTaskBuffer;
-    static StackType_t sensorsTaskStack[CONFIG_SENSORS_TASK_STACK_SIZE];
-    _sensorsTask = xTaskCreateStaticPinnedToCore(sensorsTaskExec, sensorsTaskName, 
-      CONFIG_SENSORS_TASK_STACK_SIZE, NULL, CONFIG_TASK_PRIORITY_SENSORS, sensorsTaskStack, &sensorsTaskBuffer, CONFIG_TASK_CORE_SENSORS);
-  #else
-    xTaskCreatePinnedToCore(sensorsTaskExec, sensorsTaskName, 
-      CONFIG_SENSORS_TASK_STACK_SIZE, NULL, CONFIG_TASK_PRIORITY_SENSORS, &_sensorsTask, CONFIG_TASK_CORE_SENSORS);
-  #endif // CONFIG_SENSORS_STATIC_ALLOCATION
-  if (_sensorsTask) {
-    rloga_i("Task [ %s ] has been successfully created and started", sensorsTaskName);
-    return sensorsEventHandlersRegister();
+  // #if CONFIG_TARGET_STATIC_ALLOCATION
+    static StaticTask_t targetTaskBuffer;
+    static StackType_t targetTaskStack[CONFIG_TARGET_TASK_STACK_SIZE];
+    _targetTask = xTaskCreateStaticPinnedToCore(targetTaskExec, targetTaskName, 
+      CONFIG_TARGET_TASK_STACK_SIZE, NULL, CONFIG_TASK_PRIORITY_TARGET, targetTaskStack, &targetTaskBuffer, CONFIG_TASK_CORE_TARGET);
+  // #else
+  //   xTaskCreatePinnedToCore(targetTaskExec, targetTaskName, 
+  //     CONFIG_TARGET_TASK_STACK_SIZE, NULL, CONFIG_TASK_PRIORITY_TARGET, &_targetTask, CONFIG_TASK_CORE_TARGET);
+  // #endif // CONFIG_TARGET_STATIC_ALLOCATION
+  if (_targetTask) {
+    rloga_i("Task [ %s ] has been successfully created and started", targetTaskName);
+    return targetEventHandlersRegister();
   }
   else {
     rloga_e("Failed to create a task for processing sensor readings!");
@@ -822,29 +685,29 @@ bool sensorsTaskStart()
   };
 }
 
-bool sensorsTaskSuspend()
+bool targetTaskSuspend()
 {
-  if ((_sensorsTask) && (eTaskGetState(_sensorsTask) != eSuspended)) {
-    vTaskSuspend(_sensorsTask);
-    if (eTaskGetState(_sensorsTask) == eSuspended) {
-      rloga_d("Task [ %s ] has been suspended", sensorsTaskName);
+  if ((_targetTask) && (eTaskGetState(_targetTask) != eSuspended)) {
+    vTaskSuspend(_targetTask);
+    if (eTaskGetState(_targetTask) == eSuspended) {
+      rloga_d("Task [ %s ] has been suspended", targetTaskName);
       return true;
     } else {
-      rloga_e("Failed to suspend task [ %s ]!", sensorsTaskName);
+      rloga_e("Failed to suspend task [ %s ]!", targetTaskName);
     };
   };
   return false;
 }
 
-bool sensorsTaskResume()
+bool targetTaskResume()
 {
-  if ((_sensorsTask) && (eTaskGetState(_sensorsTask) == eSuspended)) {
-    vTaskResume(_sensorsTask);
-    if (eTaskGetState(_sensorsTask) != eSuspended) {
-      rloga_i("Task [ %s ] has been successfully resumed", sensorsTaskName);
+  if ((_targetTask) && (eTaskGetState(_targetTask) == eSuspended)) {
+    vTaskResume(_targetTask);
+    if (eTaskGetState(_targetTask) != eSuspended) {
+      rloga_i("Task [ %s ] has been successfully resumed", targetTaskName);
       return true;
     } else {
-      rloga_e("Failed to resume task [ %s ]!", sensorsTaskName);
+      rloga_e("Failed to resume task [ %s ]!", targetTaskName);
     };
   };
   return false;
